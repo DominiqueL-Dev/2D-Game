@@ -218,3 +218,22 @@ document.getElementById("soundControl").addEventListener("click", () => {
     sounds.toggleMute();
   }
 });
+
+window.addEventListener("DOMContentLoaded", () => {
+  const mobileButtons = document.querySelectorAll("#mobileButtonSection img");
+
+  mobileButtons.forEach((btn) => {
+    // Verhindert das Kontextmenü (z. B. „Bild speichern“)
+    btn.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
+
+    // Verhindert Long-Press-Verhalten auf iOS
+    btn.addEventListener("touchstart", (e) => {
+      e.preventDefault(); // wichtig, um langes Tippen zu blockieren
+    });
+
+    // Optional: Noch ein Fallback für iOS Safari, falls es auf das img-Level nicht greift
+    btn.setAttribute("draggable", "false"); // verhindert Drag-and-Drop
+  });
+});

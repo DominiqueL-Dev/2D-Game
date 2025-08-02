@@ -15,6 +15,8 @@ body {
   font-size: 50px;
   text-shadow: 2px 2px 6px #000000;
   overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 .d-none {
@@ -455,11 +457,13 @@ canvas {
   .wonScreen {
     padding-top: 314px;
   }
+}
 
+@media (hover: none) and (orientation: landscape) {
   .mobileButtonSection img {
     width: 40px;
-    transform: rotate(34deg);
-    transform: skew(0deg, 0deg);
+    /* transform: rotate(34deg);
+    transform: skew(0deg, 0deg); */
   }
   .mobileButtonSection {
     display: flex;
@@ -469,5 +473,11 @@ canvas {
     top: 85%;
     width: 80vw;
     z-index: 1;
+  }
+}
+
+@media (min-width: 1000px) and (max-width: 1370px) and (hover: none) {
+  .mobileButtonSection {
+    top: 70%; /* z. B. höher setzen als auf kleinen Handys */
   }
 }
