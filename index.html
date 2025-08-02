@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="./img/6_salsa_bottle/2_salsa_bottle_on_ground.png"
+    />
+    <link rel="stylesheet" href="Fonts/fonts.css" />
+    <script defer src="./classes/drawable-object.class.js"></script>
+    <script defer src="./classes/movable-object.class.js"></script>
+    <script defer src="./classes/bottle.class.js"></script>
+    <script defer src="./classes/coin.class.js"></script>
+    <script defer src="./classes/character.class.js"></script>
+    <script defer src="./classes/chicken.class.js"></script>
+    <script defer src="./classes/status-bar-health.class.js"></script>
+    <script defer src="./classes/status-bar-coin.class.js"></script>
+    <script defer src="./classes/status-bar-bottles.class.js"></script>
+    <script defer src="./classes/status-bar-endboss-health.class.js"></script>
+    <script defer src="./classes/world.class.js"></script>
+    <script defer src="./classes/cloud.class.js"></script>
+    <script defer src="./classes/background-object.class.js"></script>
+    <script defer src="./classes/keyboard.class.js"></script>
+    <script defer src="./classes/level.class.js"></script>
+    <script defer src="./classes/throwable-object.class.js"></script>
+    <script defer src="./classes/endboss.class.js"></script>
+    <script defer src="./classes/sounds.class.js"></script>
+    <script defer src="./levels/level1.js"></script>
+    <script defer src="./js/game.js"></script>
+    <title>El pollo loco</title>
+  </head>
+  <body>
+    <div id="rotatePhone" class="rotatePhone d-none">
+      <img class="rotatePhoneImg" src="./img/icons/smartphone.png" alt="" />
+    </div>
+    <h1>El pollo loco</h1>
+    <div id="buttonSection" class="buttonSection">
+      <img
+        id="soundControl"
+        class="sound_icon"
+        src="./img/icons/sound_icon.png"
+        alt=""
+      />
+      <button onclick="startGame()" id="startGame" class="startBTN">
+        Start Game
+      </button>
+      <img
+        id="controlIcon"
+        onclick="openControl()"
+        class="control_icon"
+        src="./img/icons/control_icon.png"
+        alt=""
+      />
+      <img
+        onclick="closeOverlay()"
+        id="closeIcon"
+        class="closeIcon d-none"
+        src="./img/icons/close_icon.png"
+        alt=""
+      />
+    </div>
+
+    <div id="mobileButtonSection" class="mobileButtonSection d-none">
+      <img
+        src="./img/icons/left-arrow (2).png"
+        alt="Links"
+        ontouchstart="setKey('LEFT', true)"
+        ontouchend="setKey('LEFT', false)"
+      />
+
+      <img
+        src="./img/icons/right-arrow.png"
+        alt="Rechts"
+        ontouchstart="setKey('RIGHT', true)"
+        ontouchend="setKey('RIGHT', false)"
+      />
+
+      <img
+        src="./img/icons/space.png"
+        alt="Springen"
+        ontouchstart="setKey('SPACE', true)"
+        ontouchend="setKey('SPACE', false)"
+      />
+
+      <img
+        src="./img/icons/up-arrow.png"
+        alt="Hoch"
+        ontouchstart="setKey('UP', true)"
+        ontouchend="setKey('UP', false)"
+      />
+    </div>
+
+    <div id="overlay" class="overlay">
+      <canvas id="canvas" width="720" height="480"></canvas>
+      <img
+        id="helloScreen"
+        class="startImage"
+        src="./img/9_intro_outro_screens/start/startscreen_1.png"
+        alt=""
+      />
+      <img
+        id="gameOverScreen"
+        class="gameOver d-none"
+        src="img/You won, you lost/Game Over.png"
+        alt=""
+      />
+      <div class="wonScreen">
+        <img
+          id="youWonScreen"
+          class="endScreen d-none"
+          src="./img/You won, you lost/You won A.png"
+          alt="You Won"
+        />
+        <div class="navigationSection">
+          <button
+            onclick="restartGame()"
+            id="restartGame"
+            class="restartBTN d-none"
+          >
+            Restart Game
+          </button>
+          <button onclick="reloadPage()" id="homeBTN" class="homeBTN d-none">
+            Home
+          </button>
+        </div>
+      </div>
+
+      <div id="controlOverlay" class="controlOverlay d-none">
+        <div class="controlSection">
+          <div>
+            <div class="imgSection">
+              <div>
+                <img src="./img/icons/a-button.png" alt="" />
+                <img src="./img/icons/slash.png" alt="" />
+                <img src="./img/icons/left-arrow (2).png" alt="" />
+              </div>
+              <div>
+                <img src="./img/icons/d-button.png" alt="" />
+                <img src="./img/icons/slash.png" alt="" />
+                <img src="./img/icons/right-arrow.png" alt="" />
+              </div>
+              <div>
+                <img src="./img/icons/w-button.png" alt="" />
+                <img src="./img/icons/slash.png" alt="" />
+                <img src="./img/icons/up-arrow.png" alt="" />
+              </div>
+              <img src="./img/icons/space.png" alt="" />
+            </div>
+          </div>
+          <div class=""></div>
+          <div class="description">
+            <div>
+              <div>walk left</div>
+              <div>walk rigth</div>
+              <div>throw bottle</div>
+              <div>jump</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="infoOverlay" class="infoOverlay d-none">
+        <div class="infoContent">
+          <h1>Impressum</h1>
+          <p>
+            Dominique Lieblang<br />
+            Nedlitzer Str. 6a<br />
+            14612 Falkensee
+          </p>
+          <h2>Kontakt</h2>
+          <p>
+            Telefon: 017684277001<br />
+            E-Mail: D.Lieblang4989@gmail.com
+          </p>
+          <p>
+            Quelle:
+            <a href="https://www.e-recht24.de">https://www.e-recht24.de</a>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="buttonFooter">
+      <img
+        onclick="openInfo()"
+        class="info_icon"
+        src="./img/icons/impressum_icon.png"
+        alt=""
+      />
+    </div>
+  </body>
+</html>
