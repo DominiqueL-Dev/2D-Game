@@ -59,17 +59,17 @@ class Sounds {
   }
 
   /**
-   * Toggles the mute state for all game sounds.
+   * Toggles the global mute state for all game sounds.
    *
-   * This method:
-   * - Switches the `muted` flag between `true` and `false`.
-   * - Applies the mute state to all sounds stored in `allSounds`.
-   * - Calls `updateSoundIcon()` to refresh the UI to reflect the current mute state.
-   *
-   * @method toggleMute
+   * - Inverts the current mute status.
+   * - Stores the updated mute state in `localStorage` under the key `"muted"`.
+   * - Applies the mute setting to all audio elements in `this.allSounds`.
+   * - Updates the sound icon in the UI to reflect the current mute state.
    */
   toggleMute() {
     this.muted = !this.muted;
+    localStorage.setItem("muted", this.muted);
+
     this.allSounds.forEach((sound) => {
       sound.muted = this.muted;
     });
@@ -95,6 +95,26 @@ class Sounds {
     } else {
       icon.src = "./img/icons/sound_icon.png";
       icon.classList.remove("mute_icon");
+    }
+  }
+
+  /**
+   * Restores the global mute state from localStorage.
+   *
+   * - Reads the `"muted"` value from localStorage.
+   * - If found, updates the `muted` flag accordingly.
+   * - Applies the mute setting to all audio elements in `this.allSounds`.
+   * - Updates the sound icon in the UI to reflect the restored mute state.
+   */
+  restoreMute() {
+    let savedMute = localStorage.getItem("muted");
+
+    if (savedMute !== null) {
+      this.muted = savedMute === "true";
+      this.allSounds.forEach((sound) => {
+        sound.muted = this.muted;
+      });
+      this.updateSoundIcon();
     }
   }
 }
