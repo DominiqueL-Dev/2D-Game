@@ -8,6 +8,7 @@ class Character extends MovableObject {
   lastActionTime = new Date().getTime();
   isIdle = false;
   world;
+  hasPlayedLoseSound = false;
 
   IMAGES_IDLE = [
     "img/2_character_pepe/1_idle/idle/I-1.png",
@@ -151,15 +152,14 @@ class Character extends MovableObject {
   /**
    * Starts the character's animation loop based on their current state.
    *
-   * This method runs at 10 FPS (every 100 ms) and determines which animation
-   * sequence to play depending on the character's condition:
+   * This method executes every 100 milliseconds (10 FPS) and determines the correct animation
+   * to display based on the character's condition:
    *
-   * - If the character is dead, it plays the death animation and triggers lose sounds.
-   * - If hurt, it plays the hurt animation and sound effect.
-   * - If the character is in the air (`isAboveGround()`), it plays the jump animation.
-   * - Otherwise, it decides between idle or walking animation based on `idleTime`.
-   *
-   * Additionally, the snore sound is paused on each tick to prevent overlap.
+   * - Pauses the snore sound to avoid overlapping audio playback.
+   * - If the character is dead (`isDead()`), triggers the lose sound (once) and plays the death animation.
+   * - If the character is hurt (`isHurt()`), plays the hurt animation and sound effect.
+   * - If the character is mid-air (`isAboveGround()`), plays the jumping animation.
+   * - Otherwise, chooses between idle or walking animation depending on the `idleTime` since last action.
    *
    * @method startCharacterAnimationLoop
    */
@@ -169,7 +169,7 @@ class Character extends MovableObject {
       let now = new Date().getTime();
       let idleTime = (now - this.lastActionTime) / 1000;
       if (this.isDead()) {
-        this.playLoseSounds();
+        this.playLoseSoundOnce();
         this.playAnimation(this.IMAGES_DEAD);
       } else if (this.isHurt()) {
         this.playAnimation(this.IMAGES_HURT);
@@ -180,6 +180,22 @@ class Character extends MovableObject {
         this.playIdleOrWalkAnimation(idleTime);
       }
     }, 100);
+  }
+
+  /**
+   * Plays the lose sound exactly once to avoid repeated playback.
+   *
+   * This method checks a flag (`hasPlayedLoseSound`) to determine whether the lose sound
+   * has already been triggered. If not, it calls `playLoseSounds()` and sets the flag to true.
+   * Useful during character death to prevent the sound from playing multiple times.
+   *
+   * @method playLoseSoundOnce
+   */
+  playLoseSoundOnce() {
+    if (!this.hasPlayedLoseSound) {
+      this.playLoseSounds();
+      this.hasPlayedLoseSound = true;
+    }
   }
 
   /**
@@ -364,26 +380,29 @@ class Character extends MovableObject {
   }
 
   /**
-   * Ends the game after a short delay and performs cleanup actions.
+   * Ends the game after a short delay, showing the game over screen and handling cleanup.
    *
-   * This method:
-   * - Clears the animation interval passed to it.
-   * - Waits 500 milliseconds before:
-   *   - Displaying the game over screen via `showGameOverScreen()`.
-   *   - Clearing the global `world` reference.
-   *   - Stopping all running intervals via `clearAllInterVals()`.
-   *   - Playing the lose sound (`sounds.lose2`) at reduced volume.
-   *   - Pausing the main background sound (`sounds.main`).
+   * This method clears the given interval, then waits 500ms before:
+   * - Displaying the game over screen (`gameOverScreen`),
+   * - Hiding UI elements (`soundControl`, `controlIcon`),
+   * - Showing end buttons via `showEndButtonsWithDelay()`,
+   * - Setting the `world` to `null`,
+   * - Playing the secondary lose sound (`lose2`),
+   * - Pausing the main game music.
    *
+   * @param {number} interval - The interval ID to clear before proceeding.
    * @method endGameAfterDelay
-   * @param {number} interval - The interval ID to be cleared before triggering game over.
    */
   endGameAfterDelay(interval) {
     clearInterval(interval);
+
     setTimeout(() => {
-      this.showGameOverScreen();
+      document.getElementById("gameOverScreen").classList.remove("d-none");
+      document.getElementById("soundControl").classList.add("d-none");
+      document.getElementById("controlIcon").classList.add("d-none");
+
+      this.showEndButtonsWithDelay();
       world = null;
-      clearAllInterVals();
       sounds.lose2.volume = 0.1;
       sounds.lose2.play();
       sounds.main.pause();
@@ -391,22 +410,20 @@ class Character extends MovableObject {
   }
 
   /**
-   * Displays the game over screen and updates UI elements accordingly.
+   * Displays the restart and home buttons after a 2-second delay.
    *
-   * This method:
-   * - Shows the game over overlay (`#gameOverScreen`).
-   * - Hides sound and control icons (`#soundControl`, `#controlIcon`).
-   * - Reveals the "Restart" and "Home" buttons (`#restartGame`, `#homeBTN`).
+   * This method waits 2000 milliseconds before removing the `d-none` class from:
+   * - `restartGame` button,
+   * - `homeBTN` button.
    *
-   * It manipulates DOM element classes to control visibility using `classList`.
+   * Typically used at the end of the game to allow the player to restart or return home.
    *
-   * @method showGameOverScreen
+   * @method showEndButtonsWithDelay
    */
-  showGameOverScreen() {
-    document.getElementById("gameOverScreen").classList.remove("d-none");
-    document.getElementById("soundControl").classList.add("d-none");
-    document.getElementById("controlIcon").classList.add("d-none");
-    document.getElementById("restartGame").classList.remove("d-none");
-    document.getElementById("homeBTN").classList.remove("d-none");
+  showEndButtonsWithDelay() {
+    setTimeout(() => {
+      document.getElementById("restartGame").classList.remove("d-none");
+      document.getElementById("homeBTN").classList.remove("d-none");
+    }, 2000);
   }
 }
