@@ -6,6 +6,7 @@ class ThrowableObject extends MovableObject {
   splashAnimationPlayed = false;
   groundLevel = 380.5;
   hasExploded = false;
+  onSplash = null;
 
   IMAGES_ROTATION = [
     "img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png",
@@ -137,25 +138,28 @@ class ThrowableObject extends MovableObject {
   }
 
   /**
-   * Plays the splash animation sequence when the thrown object hits the ground.
+   * Initiates the splash animation sequence for a throwable object.
    *
-   * This method:
-   * - Sets the flag `splashAnimationPlayed` to true to prevent re-triggering.
-   * - Clears ongoing intervals related to throwing, animation, and gravity.
-   * - Sets the vertical position `y` to the ground level.
-   * - Starts a rapid interval (`splashInterval`) that updates splash animation frames every 10ms.
-   * - Uses `updateSplashAnimation(i, splashInterval)` to advance the animation frames.
+   * This method clears all active movement and animation intervals related to the object,
+   * then optionally sets the object's Y-position to its ground level unless
+   * `skipGroundAdjustment` is set to `true`. It begins a new splash animation loop
+   * that cycles through splash images using `updateSplashAnimation()`.
+   *
+   * @param {boolean} [skipGroundAdjustment=false] - If `true`, the object will not be snapped to the ground before playing the splash.
    *
    * @method playSplashAnimation
    */
-  playSplashAnimation() {
+  playSplashAnimation(skipGroundAdjustment = false) {
     this.splashAnimationPlayed = true;
 
     clearInterval(this.throwInterval);
     clearInterval(this.animationInterval);
     clearInterval(this.gravityInterval);
 
-    this.y = this.groundLevel;
+    if (!skipGroundAdjustment) {
+      this.y = this.groundLevel;
+    }
+
     let i = 0;
     let splashInterval = setInterval(() => {
       i = this.updateSplashAnimation(i, splashInterval);
@@ -163,17 +167,18 @@ class ThrowableObject extends MovableObject {
   }
 
   /**
-   * Updates the splash animation frame for the thrown object.
+   * Updates the splash animation frame-by-frame.
    *
-   * This method:
-   * - Sets the current image frame from the splash images based on index `i`.
-   * - Increments the frame index `i`.
-   * - Clears the animation interval and moves the object off-screen when the animation completes.
+   * This function is called repeatedly in an interval loop until all splash images
+   * have been displayed. Once the final image is shown, it clears the animation interval,
+   * removes the bottle from view by setting its position off-screen, and calls
+   * the optional `onSplash()` callback if defined (used to signal that a splash has finished).
+   *
+   * @param {number} i - Current index of the splash animation frame.
+   * @param {number} splashInterval - The interval ID used for clearing the animation loop.
+   * @returns {number} - The updated index for the next animation frame.
    *
    * @method updateSplashAnimation
-   * @param {number} i - The current frame index of the splash animation.
-   * @param {number} splashInterval - The interval ID controlling the splash animation loop.
-   * @returns {number} The updated frame index for the next animation step.
    */
   updateSplashAnimation(i, splashInterval) {
     if (i < this.IMAGES_SPLASH.length) {
@@ -184,7 +189,24 @@ class ThrowableObject extends MovableObject {
       clearInterval(splashInterval);
       this.x = -9999;
       this.y = -9999;
+      if (this.onSplash) {
+        this.onSplash();
+      }
     }
     return i;
+  }
+
+  /**
+   * Triggers the explosion animation of the bottle at its current position.
+   *
+   * This method is used when the bottle collides with an enemy or the endboss,
+   * causing an immediate explosion without resetting the `groundLevel`.
+   * Internally, it delegates to `playSplashAnimation(true)` to prevent
+   * repositioning the bottle.
+   *
+   * @method explodeAt
+   */
+  explodeAt() {
+    this.playSplashAnimation(true); // kein groundLevel setzen
   }
 }
