@@ -4,6 +4,7 @@ let keyboard = new Keyboard();
 let sounds;
 let gameStarted = false;
 sounds = new Sounds();
+sounds.restoreMute();
 
 /**
  * Sets up an event listener that updates the sound icon when the window finishes loading.
@@ -219,21 +220,26 @@ document.getElementById("soundControl").addEventListener("click", () => {
   }
 });
 
+/**
+ * Prevents default behavior (e.g., context menu and touch scrolling)
+ * for all mobile control buttons once the DOM content has fully loaded.
+ *
+ * - Disables right-click context menu on control buttons.
+ * - Prevents default touch behavior (like scrolling or highlighting).
+ * - Disables dragging of the buttons by setting `draggable` to false.
+ */
 window.addEventListener("DOMContentLoaded", () => {
   const mobileButtons = document.querySelectorAll("#mobileButtonSection img");
 
   mobileButtons.forEach((btn) => {
-    // Verhindert das Kontextmenü (z. B. „Bild speichern“)
     btn.addEventListener("contextmenu", (e) => {
       e.preventDefault();
     });
 
-    // Verhindert Long-Press-Verhalten auf iOS
     btn.addEventListener("touchstart", (e) => {
-      e.preventDefault(); // wichtig, um langes Tippen zu blockieren
+      e.preventDefault();
     });
 
-    // Optional: Noch ein Fallback für iOS Safari, falls es auf das img-Level nicht greift
-    btn.setAttribute("draggable", "false"); // verhindert Drag-and-Drop
+    btn.setAttribute("draggable", "false");
   });
 });
