@@ -109,22 +109,16 @@ class Endboss extends MovableObject {
   }
 
   /**
-   * Executes a single step of the death animation sequence.
+   * Handles one step of the endboss death animation sequence.
    *
-   * This method:
-   * - Displays the current death frame by updating `this.img` from `this.imageCache`.
-   * - Increments the frame index `i` to proceed to the next frame.
-   * - If all frames have been shown (`i >= IMAGES_DEAD.length`), it:
-   *   - Clears the animation interval,
-   *   - Plays the win sound via `playWinSound()`,
-   *   - Displays the win screen via `showYouWonScreen()`,
-   *   - Cleans up the world and intervals,
-   *   - Pauses the main background sound.
+   * - Iterates through the `IMAGES_DEAD` array to animate the death.
+   * - If all frames have been displayed, clears the interval,
+   *   plays the win sound, shows the victory screen, and
+   *   initiates final cleanup steps.
    *
-   * @method handleDeathAnimationStep
-   * @param {number} i - The current frame index.
-   * @param {number} deathInterval - The interval ID controlling the animation loop.
-   * @returns {number} - The updated frame index for the next step.
+   * @param {number} i - Current frame index in the death animation sequence.
+   * @param {number} deathInterval - The ID of the interval that runs the animation.
+   * @returns {number} - The updated frame index for the next animation step.
    */
   handleDeathAnimationStep(i, deathInterval) {
     if (i < this.IMAGES_DEAD.length) {
@@ -135,11 +129,33 @@ class Endboss extends MovableObject {
       clearInterval(deathInterval);
       this.playWinSound();
       this.showYouWonScreen();
+      this.finalizeGameAfterDelay();
+    }
+    return i;
+  }
+
+/**
+ * Finalizes the game after a short delay once the player has won.
+ *
+ * This method sets a 3-second timeout after the endboss defeat to:
+ * - Show the restart and home buttons by removing the `d-none` class.
+ * - Reset the game world by setting `world` to `null`.
+ * - Clear all running intervals via `clearAllInterVals()`.
+ * - Pause the main background music.
+ *
+ * This creates a smooth transition from the game ending to the post-game UI.
+ *
+ * @method finalizeGameAfterDelay
+ */
+  finalizeGameAfterDelay() {
+    setTimeout(() => {
+      document.getElementById("restartGame").classList.remove("d-none");
+      document.getElementById("homeBTN").classList.remove("d-none");
+
       world = null;
       clearAllInterVals();
       sounds.main.pause();
-    }
-    return i;
+    }, 3000);
   }
 
   /**
@@ -174,7 +190,6 @@ class Endboss extends MovableObject {
    * This method:
    * - Shows the victory overlay (`#youWonScreen`).
    * - Hides the sound control and general control icons.
-   * - Reveals the restart and home buttons for further user interaction.
    *
    * @method showYouWonScreen
    */
@@ -182,8 +197,6 @@ class Endboss extends MovableObject {
     document.getElementById("youWonScreen").classList.remove("d-none");
     document.getElementById("soundControl").classList.add("d-none");
     document.getElementById("controlIcon").classList.add("d-none");
-    document.getElementById("restartGame").classList.remove("d-none");
-    document.getElementById("homeBTN").classList.remove("d-none");
   }
 
   /**
