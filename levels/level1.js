@@ -23,6 +23,12 @@ function initLevel1() {
       new Chicken(),
       new Chicken(),
       new Chicken(),
+      new Chick(),
+      new Chick(),
+      new Chick(),
+      new Chick(),
+      new Chick(),
+      new Chick(),
       new Endboss(),
     ],
 
