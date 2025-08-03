@@ -12,6 +12,7 @@ class World {
   collectedBottles = [];
   throwableObjects = [];
   collectedCoins = [];
+  canThrowBottle = true;
 
   /**
    * Creates a new instance of the game world.
@@ -65,23 +66,33 @@ class World {
   }
 
   /**
-   * Handles the logic for throwing a bottle when the UP key is pressed.
+   * Checks whether the player can throw a bottle and handles the throw action.
    *
-   * If the UP key is pressed and the player has at least one collected bottle:
-   * - A bottle is removed from the collected bottles.
-   * - A new `ThrowableObject` is created and added to the list of thrown objects.
-   * - The bottle status bar is updated based on the remaining bottles.
+   * Conditions for throwing:
+   * - The `UP` key is pressed.
+   * - The player has at least one bottle collected.
+   * - No other bottle is currently in flight (`canThrowBottle` is `true`).
+   *
+   * When conditions are met:
+   * - A bottle is removed from the inventory.
+   * - A new `ThrowableObject` is instantiated and thrown from the character’s position.
+   * - The `onSplash` callback is assigned to re-enable bottle throwing after the splash animation.
+   * - The bottle is added to the `throwableObjects` array.
+   * - The UI bottle status bar is updated.
    *
    * @method checkThrowObjects
    */
   checkThrowObjects() {
-    if (this.keyboard.UP && this.collectedBottles.length > 0) {
+    if (this.keyboard.UP && this.collectedBottles.length > 0 && this.canThrowBottle) {
+      this.canThrowBottle = false;
       this.collectedBottles.pop();
-
       let thrownBottle = new ThrowableObject(
         this.character.x + 100,
         this.character.y + 100
       );
+
+      thrownBottle.onSplash = () => {
+        this.canThrowBottle = true;};
       this.throwableObjects.push(thrownBottle);
       this.StatusBarBottles.setPercentage(this.collectedBottles.length * 20);
     }
@@ -339,16 +350,16 @@ class World {
   }
 
   /**
-   * Handles collisions between thrown bottles and enemies (including the Endboss).
+   * Checks for collisions between thrown bottles and enemies, including the endboss.
    *
-   * - Checks if any throwable bottle collides with the Endboss.
-   *   - If so, reduces the Endboss’s energy, updates the UI, and triggers animations as needed.
-   * - Iterates over all enemies and checks for collisions with each bottle.
-   *   - Delegates handling to `handleBottleEnemyCollision()`.
+   * This method iterates through all active throwable objects and:
+   * - If a bottle collides with the endboss, delegates handling to `handleEndbossHit`.
+   * - Otherwise, checks for collisions with all regular enemies and calls `handleBottleEnemyCollision`.
    *
-   * This function runs in reverse loop over `throwableObjects` to safely modify the array during iteration.
+   * It ensures that each bottle is evaluated once per frame and properly applies effects
+   * such as reducing health, triggering animations, and removing defeated enemies.
    *
-   * @function checkBottleEnemyCollisions
+   * @method checkBottleEnemyCollisions
    */
   checkBottleEnemyCollisions() {
     let endboss = this.level.enemies.find((e) => e instanceof Endboss);
@@ -356,14 +367,37 @@ class World {
       let bottle = this.throwableObjects[i];
 
       if (endboss && bottle.isColliding(endboss)) {
-        endboss.energy -= 20;
-        this.updateEndbossHealthUI(endboss);
-        this.checkAndAnimateEndboss(endboss);
+        this.handleEndbossHit(endboss, bottle);
         continue;
       }
       this.level.enemies.forEach((enemy) => {
         this.handleBottleEnemyCollision(enemy, bottle);
       });
+    }
+  }
+
+  /**
+   * Handles the impact of a thrown bottle on the endboss.
+   *
+   * This method performs the following actions:
+   * - Reduces the endboss's energy by 20 points.
+   * - Updates the endboss health bar UI accordingly.
+   * - Triggers appropriate animations or end sequence based on the endboss's remaining health.
+   * - Triggers the splash explosion of the bottle at the point of contact.
+   * - Calls the `onSplash` callback if it exists to notify other systems (e.g., to re-enable throwing).
+   *
+   * @param {Endboss} endboss - The endboss object being hit.
+   * @param {ThrowableObject} bottle - The thrown bottle that collided with the endboss.
+   *
+   * @method handleEndbossHit
+   */
+  handleEndbossHit(endboss, bottle) {
+    endboss.energy -= 20;
+    this.updateEndbossHealthUI(endboss);
+    this.checkAndAnimateEndboss(endboss);
+    bottle.explodeAt();
+    if (bottle.onSplash) {
+      bottle.onSplash();
     }
   }
 
@@ -397,21 +431,27 @@ class World {
   }
 
   /**
-   * Handles the collision logic between a thrown bottle and an enemy.
+   * Handles the collision between a thrown bottle and a regular enemy.
    *
-   * - If the enemy is not dead and the bottle collides with it,
-   *   the enemy is marked as dead and the bottle plays a splash animation at the enemy's position.
+   * If the enemy is still alive and the bottle collides with it:
+   * - The enemy is marked as dead and its death animation is triggered.
+   * - The bottle triggers its splash explosion using `explodeAt()`.
+   * - If an `onSplash` callback is defined on the bottle, it is executed (e.g., to re-enable bottle throwing).
    *
-   * @param {MovableObject} enemy - The enemy object to check collision against.
-   * @param {ThrowableObject} bottle - The thrown bottle object involved in the collision.
+   * @param {MovableObject} enemy - The enemy that may collide with the bottle.
+   * @param {ThrowableObject} bottle - The thrown bottle potentially colliding with the enemy.
+   *
+   * @method handleBottleEnemyCollision
    */
   handleBottleEnemyCollision(enemy, bottle) {
     if (!enemy.isDead && bottle.isColliding(enemy)) {
       enemy.die();
 
-      bottle.x = enemy.x + enemy.width / 2 - bottle.width / 2;
-      bottle.y = enemy.y + enemy.height / 2 - bottle.height / 2;
-      bottle.playSplashAnimation();
+      bottle.explodeAt(); // 💥 neue Methode nutzen
+
+      if (bottle.onSplash) {
+        bottle.onSplash();
+      }
     }
   }
 
