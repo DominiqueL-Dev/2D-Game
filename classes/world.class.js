@@ -177,11 +177,11 @@ class World {
    */
   renderAllObjects() {
     this.addObjectsToMap(this.level.backgroundObjects);
-    this.addObjectsToMap(this.throwableObjects);
     this.addObjectsToMap(this.level.clouds);
     this.addObjectsToMap(this.level.bottles);
     this.addObjectsToMap(this.level.coins);
     this.addObjectsToMap(this.level.enemies);
+    this.addObjectsToMap(this.throwableObjects);
   }
 
   /**
@@ -447,7 +447,7 @@ class World {
     if (!enemy.isDead && bottle.isColliding(enemy)) {
       enemy.die();
 
-      bottle.explodeAt(); // 💥 neue Methode nutzen
+      bottle.explodeAt();
 
       if (bottle.onSplash) {
         bottle.onSplash();
