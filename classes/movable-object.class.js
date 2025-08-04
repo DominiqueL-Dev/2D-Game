@@ -51,25 +51,29 @@ class MovableObject extends DrawableObject {
   }
 
   /**
-   * Checks if this object is colliding with another movable object.
+   * Checks whether this object is colliding with another movable object, considering
+   * individual collision offsets for both objects.
    *
-   * Collision is determined by checking if the bounding boxes of the two objects overlap.
+   * Collision detection uses axis-aligned bounding boxes (AABB) and includes offset
+   * margins for finer control of hitbox precision. Offsets are retrieved via
+   * `getCollisionOffset()` for both objects.
+   *
+   * The method returns `true` if the bounding boxes of both objects overlap,
+   * indicating a collision.
    *
    * @method isColliding
-   * @param {Object} mo - The other movable object to check collision against.
-   * @param {number} mo.x - The x-coordinate of the other object.
-   * @param {number} mo.y - The y-coordinate of the other object.
-   * @param {number} mo.width - The width of the other object.
-   * @param {number} mo.height - The height of the other object.
-   * @returns {boolean} `true` if the objects' bounding boxes overlap (collide), otherwise `false`.
+   * @param {MovableObject} mo - The other object to check collision against.
+   * @returns {boolean} `true` if this object collides with `mo`, otherwise `false`.
    */
   isColliding(mo) {
+    let offsetThis = this.getCollisionOffset();
+    let offsetOther = mo.getCollisionOffset();
+
     return (
-      this.x + this.width > mo.x &&
-      this.y + this.height > mo.y &&
-      this.x < mo.x &&
-      this.y < mo.y + mo.height
-    );
+      this.x + offsetThis.left + this.width - offsetThis.right > mo.x + offsetOther.left && 
+      this.y + offsetThis.top + this.height - offsetThis.bottom > mo.y + offsetOther.top && 
+      this.x + offsetThis.left < mo.x + offsetOther.left + mo.width - offsetOther.right &&
+      this.y + offsetThis.top < mo.y + offsetOther.top + mo.height - offsetOther.bottom);
   }
 
   /**
