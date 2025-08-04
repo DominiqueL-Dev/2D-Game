@@ -58,4 +58,36 @@ class DrawableObject {
       this.imageCache[path] = img;
     });
   }
+
+  /**
+   * Returns the collision offset values for different object types.
+   *
+   * This method customizes the bounding box used in collision detection
+   * based on the instance type of the object. Each object type may require
+   * different padding around its image for accurate collision handling.
+   *
+   * The returned offset object includes adjustments for the top, right,
+   * bottom, and left sides of the object.
+   *
+   * @returns {{top: number, right: number, bottom: number, left: number}} An object with offset values for each side.
+   *
+   * @method getCollisionOffset
+   */
+  getCollisionOffset() {
+    if (this instanceof Character) {
+      return { top: 0, right: 40, bottom: 0, left: 0 };
+    } else if (this instanceof Chicken) {
+      return { top: 0, right: 0, bottom: 0, left: 0 };
+    } else if (this instanceof Endboss) {
+      return { top: 0, right: 40, bottom: 0, left: 50 };
+    } else if (this instanceof Chick) {
+      return { top: 0, right: 0, bottom: 0, left: 0 };
+    } else if (this instanceof Bottle) {
+      return { top: 0, right: 100, bottom: 10, left: 25 };
+    } else if (this instanceof Coins) {
+      return { top: 0, right: 100, bottom: 10, left: 25 };
+    } else {
+      return { top: 0, right: 0, bottom: 0, left: 0 };
+    }
+  }
 }
