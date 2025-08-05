@@ -15,15 +15,10 @@ class World {
   canThrowBottle = true;
 
   /**
-   * Creates a new instance of the game world.
-   *
-   * Initializes the rendering context, canvas reference, keyboard input,
-   * generates random bottle objects, starts the drawing process, and sets up
-   * the game world and its update loop.
-   *
-   * @constructor
-   * @param {HTMLCanvasElement} canvas - The canvas element used to render the game.
-   * @param {object} keyboard - The object that tracks user input via keyboard.
+   * Initializes the game world by setting up the canvas context, keyboard controls,
+   * and randomly generating bottles for the level. Also starts the main game loop.
+   * @param {HTMLCanvasElement} canvas - The canvas element used for rendering the game.
+   * @param {Object} keyboard - An object representing the current state of keyboard inputs.
    */
   constructor(canvas, keyboard) {
     this.ctx = canvas.getContext("2d");
@@ -36,27 +31,14 @@ class World {
   }
 
   /**
-   * Assigns the current world instance to the character.
-   *
-   * This allows the character to reference and interact with the world context,
-   * enabling features like camera tracking, environment awareness, or physics interactions.
-   *
-   * @method setWorld
+   * Assigns the current world instance to the character for world interaction.
    */
   setWorld() {
     this.character.world = this;
   }
 
   /**
-   * Starts the game logic loop.
-   *
-   * This method runs a repeating interval that:
-   * - Checks for collisions between objects (e.g., character and enemies or items).
-   * - Monitors user input to trigger throwing objects.
-   *
-   * The loop runs every 200 milliseconds.
-   *
-   * @method run
+   * Starts a recurring game loop that checks for collisions and throwable object actions every 200ms.
    */
   run() {
     setInterval(() => {
@@ -66,51 +48,30 @@ class World {
   }
 
   /**
-   * Checks whether the player can throw a bottle and handles the throw action.
-   *
-   * Conditions for throwing:
-   * - The `UP` key is pressed.
-   * - The player has at least one bottle collected.
-   * - No other bottle is currently in flight (`canThrowBottle` is `true`).
-   *
-   * When conditions are met:
-   * - A bottle is removed from the inventory.
-   * - A new `ThrowableObject` is instantiated and thrown from the character’s position.
-   * - The `onSplash` callback is assigned to re-enable bottle throwing after the splash animation.
-   * - The bottle is added to the `throwableObjects` array.
-   * - The UI bottle status bar is updated.
-   *
-   * @method checkThrowObjects
-   */
+ * Handles the logic for throwing a bottle when the UP key is pressed, 
+ * with additional checks to ensure the character is facing right and not moving left. 
+ * Updates the throwable objects list and the bottle status bar, 
+ * and enforces a cooldown until the bottle splash animation completes.
+ */
   checkThrowObjects() {
-    if (this.keyboard.UP && this.collectedBottles.length > 0 && this.canThrowBottle) {
+    if (this.keyboard.UP && this.collectedBottles.length > 0 && this.canThrowBottle && !this.keyboard.LEFT &&  !this.character.otherDirection) {
       this.canThrowBottle = false;
       this.collectedBottles.pop();
       let thrownBottle = new ThrowableObject(
         this.character.x + 100,
         this.character.y + 100
       );
-
       thrownBottle.onSplash = () => {
-        this.canThrowBottle = true;};
+        this.canThrowBottle = true;
+      };
       this.throwableObjects.push(thrownBottle);
       this.StatusBarBottles.setPercentage(this.collectedBottles.length * 20);
     }
   }
 
   /**
-   * Renders the current game frame by drawing all visible objects and UI elements.
-   *
-   * This method:
-   * - Clears the canvas for a fresh frame.
-   * - Translates the camera for side-scrolling effect.
-   * - Renders all game objects (backgrounds, enemies, items, etc.).
-   * - Resets the camera translation.
-   * - Renders status bars (e.g., health, bottles, coins).
-   * - Draws the main character with camera adjustment.
-   * - Schedules the next animation frame.
-   *
-   * @method draw
+   * Clears the canvas and renders all game elements, including background objects,
+   * status bars, and the main character. Schedules the next animation frame.
    */
   draw() {
     let self = this;
@@ -129,12 +90,10 @@ class World {
   }
 
   /**
-   * Schedules the next frame to be drawn using `requestAnimationFrame`.
+   * Schedules the next frame of the game loop using requestAnimationFrame
+   * to continuously render the game.
    *
-   * This creates a continuous animation loop by recursively calling `draw()`
-   * on the provided game context (`self`), ensuring smooth rendering at optimal frame rates.
-   *
-   * @param {Object} self - The context (typically the game instance) on which to call `draw()`.
+   * @param {Object} self - Reference to the current instance for maintaining context.
    */
   scheduleNextFrame(self) {
     requestAnimationFrame(function () {
@@ -143,15 +102,7 @@ class World {
   }
 
   /**
-   * Renders all status bars on the canvas by adding them to the map.
-   *
-   * This includes:
-   * - Health bar of the character
-   * - Bottle collection status bar
-   * - Coin collection status bar
-   * - Endboss health bar
-   *
-   * Uses `addToMap()` to draw each status bar in the correct rendering order.
+   * Renders all status bars (health, bottles, coins, endboss health) onto the canvas.
    */
   renderStatusBars() {
     this.addToMap(this.statusBarHealth);
@@ -161,19 +112,8 @@ class World {
   }
 
   /**
-   * Renders all game objects onto the canvas in the correct visual order.
-   *
-   * The objects are added in layers to ensure proper depth perception:
-   * 1. Background objects
-   * 2. Throwable objects (e.g. bottles in motion)
-   * 3. Clouds
-   * 4. Bottles on the ground
-   * 5. Coins
-   * 6. Enemies
-   *
-   * Uses `addObjectsToMap()` to draw each group of objects.
-   *
-   * @function renderAllObjects
+   * Renders all game objects from the current level onto the canvas,
+   * including background elements, clouds, collectibles, enemies, and throwable objects.
    */
   renderAllObjects() {
     this.addObjectsToMap(this.level.backgroundObjects);
@@ -185,14 +125,9 @@ class World {
   }
 
   /**
-   * Adds a list of game objects to the canvas map for rendering.
+   * Adds a list of objects to the canvas, skipping any that have already been collected.
    *
-   * Iterates over the given array of objects and adds each one to the map,
-   * unless the object has the `collected` flag set to `true`. This is useful
-   * for filtering out items like collected coins or bottles that should no longer be displayed.
-   *
-   * @function addObjectsToMap
-   * @param {Object[]} objects - Array of game objects to be rendered.
+   * @param {Object[]} objects - An array of game objects to render.
    */
   addObjectsToMap(objects) {
     objects.forEach((o) => {
@@ -203,14 +138,9 @@ class World {
   }
 
   /**
-   * Renders a movable object (`mo`) onto the canvas context, handling its direction.
+   * Draws a single game object on the canvas, flipping its image if it's facing the opposite direction.
    *
-   * If the object is facing the opposite direction (`otherDirection` is `true`),
-   * it flips the image horizontally before drawing and then flips it back afterward
-   * to maintain correct rendering orientation.
-   *
-   * @function addToMap
-   * @param {Object} mo - The movable object to render, must implement a `draw(ctx)` method and optionally have an `otherDirection` property.
+   * @param {Object} mo - The movable game object to be drawn.
    */
   addToMap(mo) {
     if (mo.otherDirection) {
@@ -223,14 +153,9 @@ class World {
   }
 
   /**
-   * Flips the rendering context horizontally to draw the object (`mo`) mirrored.
+   * Flips the given object's image horizontally by modifying the canvas transformation.
    *
-   * This is useful when an object should face the opposite direction (e.g., moving left).
-   * The transformation affects the canvas, so the object's `x` coordinate is also negated.
-   * `ctx.save()` is called to preserve the original context state.
-   *
-   * @function flipImage
-   * @param {Object} mo - The movable object to flip. Must have `x` and `width` properties.
+   * @param {Object} mo - The game object whose image should be flipped.
    */
   flipImage(mo) {
     this.ctx.save();
@@ -240,14 +165,9 @@ class World {
   }
 
   /**
-   * Restores the canvas rendering context to its previous state
-   * and reverts the horizontal flip of the object's `x` coordinate.
+   * Restores the object's original orientation and resets the canvas transformation after flipping.
    *
-   * This method should always be called after `flipImage()` to avoid
-   * unwanted transformations on subsequent drawings.
-   *
-   * @function flipImageBack
-   * @param {Object} mo - The movable object that was previously flipped.
+   * @param {Object} mo - The game object to revert after a horizontal flip.
    */
   flipImageBack(mo) {
     mo.x = mo.x * -1;
@@ -255,13 +175,9 @@ class World {
   }
 
   /**
-   * Generates an array of bottle objects positioned at a fixed vertical position.
+   * Generates a specified number of bottle objects and returns them in an array.
    *
-   * This function creates a specified number of `Bottle` instances and
-   * returns them in an array. Each bottle is placed at the y-coordinate `370`.
-   *
-   * @function generateRandomBottles
-   * @param {number} count - The number of bottle objects to generate.
+   * @param {number} count - The number of bottles to generate.
    * @returns {Bottle[]} An array of generated bottle objects.
    */
   generateRandomBottles(count) {
@@ -273,19 +189,9 @@ class World {
   }
 
   /**
-   * Checks all relevant collision interactions in the game.
-   *
-   * This includes:
-   * - Character vs. regular enemies
-   * - Character vs. endboss
-   * - Thrown bottles vs. enemies
-   * - Character collecting bottles
-   * - Character collecting coins
-   * - Triggering endboss activation when conditions are met
-   *
-   * Also filters out enemies that have been marked as collected (i.e., defeated).
-   *
-   * @function checkCollisions
+   * Checks and handles all relevant collision events in the game,
+   * including character interactions with enemies, endboss, bottles, and coins.
+   * Also filters out collected enemies from the level.
    */
   checkCollisions() {
     this.checkCharacterEnemyCollisions();
@@ -299,15 +205,9 @@ class World {
   }
 
   /**
-   * Checks for collisions between the character and each enemy in the level.
-   *
-   * - If the character is above the enemy and falling, the enemy dies and the character bounces.
-   * - Otherwise, the character takes damage.
-   * - If the character’s energy reaches 0, the death animation is triggered.
-   *
-   * This function also updates the health status bar after damage.
-   *
-   * @function checkCharacterEnemyCollisions
+   * Checks for collisions between the character and enemies.
+   * If the character is above an enemy, the enemy is defeated.
+   * Otherwise, the character takes damage, and health is updated accordingly.
    */
   checkCharacterEnemyCollisions() {
     this.level.enemies.forEach((enemy) => {
@@ -328,15 +228,9 @@ class World {
   }
 
   /**
-   * Checks if the character collides with the Endboss.
-   *
-   * - If a collision is detected, the character takes damage.
-   * - The health status bar is updated accordingly.
-   * - If the character’s energy falls to 0, the death animation is triggered.
-   *
-   * This function assumes the Endboss is a subclass of the enemy class.
-   *
-   * @function checkCharacterEndbossCollision
+   * Checks for a collision between the character and the endboss.
+   * If a collision occurs, the character takes damage and health is updated.
+   * Triggers death animation if the character dies.
    */
   checkCharacterEndbossCollision() {
     let endboss = this.level.enemies.find((e) => e instanceof Endboss);
@@ -351,15 +245,7 @@ class World {
 
   /**
    * Checks for collisions between thrown bottles and enemies, including the endboss.
-   *
-   * This method iterates through all active throwable objects and:
-   * - If a bottle collides with the endboss, delegates handling to `handleEndbossHit`.
-   * - Otherwise, checks for collisions with all regular enemies and calls `handleBottleEnemyCollision`.
-   *
-   * It ensures that each bottle is evaluated once per frame and properly applies effects
-   * such as reducing health, triggering animations, and removing defeated enemies.
-   *
-   * @method checkBottleEnemyCollisions
+   * Handles appropriate responses such as damaging enemies or triggering hit effects.
    */
   checkBottleEnemyCollisions() {
     let endboss = this.level.enemies.find((e) => e instanceof Endboss);
@@ -376,25 +262,22 @@ class World {
     }
   }
 
-  /**
-   * Handles the impact of a thrown bottle on the endboss.
-   *
-   * This method performs the following actions:
-   * - Reduces the endboss's energy by 20 points.
-   * - Updates the endboss health bar UI accordingly.
-   * - Triggers appropriate animations or end sequence based on the endboss's remaining health.
-   * - Triggers the splash explosion of the bottle at the point of contact.
-   * - Calls the `onSplash` callback if it exists to notify other systems (e.g., to re-enable throwing).
-   *
-   * @param {Endboss} endboss - The endboss object being hit.
-   * @param {ThrowableObject} bottle - The thrown bottle that collided with the endboss.
-   *
-   * @method handleEndbossHit
-   */
+ /**
+ * Handles the effects of a bottle hitting the endboss, including reducing its energy, 
+ * updating health UI, triggering animations, and playing the bottle break sound. 
+ * Also triggers the bottle's splash callback if defined.
+ * 
+ * @param {Endboss} endboss - The endboss instance that was hit.
+ * @param {ThrowableObject} bottle - The bottle involved in the collision.
+ */
   handleEndbossHit(endboss, bottle) {
     endboss.energy -= 20;
     this.updateEndbossHealthUI(endboss);
     this.checkAndAnimateEndboss(endboss);
+
+    sounds.brokenBottle.volume = 0.1;
+    sounds.brokenBottle.play();
+
     bottle.explodeAt();
     if (bottle.onSplash) {
       bottle.onSplash();
@@ -402,12 +285,10 @@ class World {
   }
 
   /**
-   * Updates the Endboss's health bar UI based on current energy level.
+   * Updates the endboss health status bar based on its current energy level.
+   * Ensures the energy value does not drop below zero.
    *
-   * - Ensures the Endboss’s energy does not drop below 0.
-   * - Updates the `StatusBarEndbossHealth` to reflect the current energy.
-   *
-   * @param {Endboss} endboss - The Endboss object whose energy is being updated.
+   * @param {Endboss} endboss - The endboss whose health UI should be updated.
    */
   updateEndbossHealthUI(endboss) {
     if (endboss.energy < 0) endboss.energy = 0;
@@ -415,12 +296,10 @@ class World {
   }
 
   /**
-   * Checks the Endboss's current energy and triggers the appropriate animation.
+   * Triggers the appropriate animation for the endboss based on its energy level.
+   * Plays death animation if defeated, otherwise shows hurt animation.
    *
-   * - If the Endboss's energy is 0 or less and not already defeated, it triggers the death animation.
-   * - Otherwise, it triggers the hurt animation.
-   *
-   * @param {Endboss} endboss - The Endboss object to check and animate.
+   * @param {Endboss} endboss - The endboss whose animation should be handled.
    */
   checkAndAnimateEndboss(endboss) {
     if (endboss.energy <= 0 && !endboss.defeated) {
@@ -430,22 +309,20 @@ class World {
     }
   }
 
-  /**
-   * Handles the collision between a thrown bottle and a regular enemy.
-   *
-   * If the enemy is still alive and the bottle collides with it:
-   * - The enemy is marked as dead and its death animation is triggered.
-   * - The bottle triggers its splash explosion using `explodeAt()`.
-   * - If an `onSplash` callback is defined on the bottle, it is executed (e.g., to re-enable bottle throwing).
-   *
-   * @param {MovableObject} enemy - The enemy that may collide with the bottle.
-   * @param {ThrowableObject} bottle - The thrown bottle potentially colliding with the enemy.
-   *
-   * @method handleBottleEnemyCollision
-   */
+/**
+ * Handles the collision between a thrown bottle and a regular enemy. 
+ * If the enemy is alive, it is killed, the bottle break sound is played, 
+ * the bottle explodes, and the splash callback is triggered if defined.
+ * 
+ * @param {Object} enemy - The enemy hit by the bottle.
+ * @param {ThrowableObject} bottle - The bottle involved in the collision.
+ */
   handleBottleEnemyCollision(enemy, bottle) {
     if (!enemy.isDead && bottle.isColliding(enemy)) {
       enemy.die();
+
+      sounds.brokenBottle.volume = 0.1;
+      sounds.brokenBottle.play();
 
       bottle.explodeAt();
 
@@ -456,12 +333,9 @@ class World {
   }
 
   /**
-   * Checks for collisions between the character and bottles in the level.
-   *
-   * If a bottle is not already collected and the character collides with it,
-   * and the collected bottle count is less than 5, the bottle is added to the
-   * collectedBottles array, marked as collected, a sound is played, and the
-   * status bar is updated to reflect the new count.
+   * Checks for collisions between the character and uncollected bottles.
+   * Collects up to 5 bottles, marks them as collected, plays a sound,
+   * and updates the bottle status bar accordingly.
    */
   collectBottles() {
     for (let i = 0; i < this.level.bottles.length; i++) {
@@ -480,9 +354,7 @@ class World {
   }
 
   /**
-   * Plays the sound effect for collecting a bottle.
-   *
-   * The sound is played at a volume of 0.5 using the `collectBottle2` audio object.
+   * Plays the sound effect for collecting a bottle and sets its volume to 50%.
    */
   playCollectBottleSound() {
     sounds.collectBottle2.play();
@@ -490,13 +362,9 @@ class World {
   }
 
   /**
-   * Checks for collisions between the character and coins.
-   *
-   * If a coin is collected:
-   * - Plays a coin sound.
-   * - Adds the coin to the `collectedCoins` array.
-   * - Marks the coin as collected.
-   * - Updates the coin status bar to reflect collection progress.
+   * Checks for collisions between the character and uncollected coins.
+   * Collects coins, plays a sound effect, marks them as collected,
+   * and updates the coin status bar.
    */
   collectCoins() {
     for (let i = 0; i < this.level.coins.length; i++) {
@@ -512,11 +380,8 @@ class World {
   }
 
   /**
-   * Checks if the character has reached the trigger point to activate the Endboss.
-   *
-   * If the character's x-position is beyond 2500 and the Endboss is not yet activated:
-   * - Calls the `activate()` method on the Endboss.
-   * - Sets the Endboss's `activated` flag to true to prevent reactivation.
+   * Activates the endboss when the character reaches a certain position (x > 2500)
+   * and the endboss has not yet been activated.
    */
   checkEndbossActivation() {
     let endboss = this.level.enemies.find((e) => e instanceof Endboss);
