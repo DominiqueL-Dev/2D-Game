@@ -422,16 +422,16 @@ canvas {
 
   .infoContent h1 {
     display: block;
-    font-size: 33px;
+    font-size: 30px;
     margin: 0px 0 10px 0;
   }
 
   .infoContent p {
-    font-size: 20px;
+    font-size: 16px;
   }
 
   .infoContent h2 {
-    font-size: 23px;
+    font-size: 20px;
   }
 
   .buttonSection {
@@ -515,21 +515,27 @@ canvas {
   }
 
   .mobileButtonSection {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
     position: absolute;
-    top: 76%;
-    width: 80vw;
-    z-index: 1;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    padding: 1rem;
+    justify-content: flex-start;
+    gap: 3rem;
   }
+
+  .pushRight {
+    margin-left: auto;
+  }
+
   .buttonFooter {
     position: absolute;
     bottom: 0;
   }
 }
 
-@media (min-width: 1025px) and (max-width: 1366px) and (min-height: 501px) and (orientation: landscape) and (hover: none) {
+@media (min-width: 1181px) and (max-width: 1366px) and (min-height: 501px) and (orientation: landscape) and (hover: none) {
   .mainHeadline {
     display: none;
   }
@@ -551,16 +557,21 @@ canvas {
   }
 
   .mobileButtonSection img {
-    width: 40px;
+    width: 60px;
   }
 
   .mobileButtonSection {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
     position: absolute;
-    top: 71%;
-    width: 70vw;
-    z-index: 1;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    padding: 1rem;
+    justify-content: flex-start;
+    gap: 3rem;
+  }
+
+  .pushRight {
+    margin-left: auto;
   }
 }
