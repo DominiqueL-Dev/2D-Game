@@ -74,19 +74,8 @@ class Character extends MovableObject {
   ];
 
   /**
-   * Initializes the character by loading all necessary image assets, enabling gravity, and starting animations.
-   *
-   * This constructor performs the following steps:
-   * - Loads the default idle image (first frame from `IMAGES_IDLE`)
-   * - Preloads all animation frame sets: idle, long idle, walking, jumping, dead, and hurt
-   * - Applies gravity to enable falling/jumping behavior
-   * - Starts the character's animation loop
-   * - Begins detection for falling behavior (e.g. to trigger jump/fall states)
-   *
-   * Assumes that all image arrays (`IMAGES_IDLE`, `IMAGES_LONGIDLE`, etc.) are defined
-   * as properties of the class or its prototype.
-   *
-   * @constructor
+   * Initializes the character by loading all necessary image assets,
+   * applying gravity, starting animations, and enabling fall detection.
    */
   constructor() {
     super().loadImage(this.IMAGES_IDLE[0]);
@@ -102,16 +91,8 @@ class Character extends MovableObject {
   }
 
   /**
-   * Starts continuous detection of the character's falling state.
-   *
-   * This method sets up a 60 FPS interval (approx. every 16.67ms) to update the `wasFalling` flag.
-   * It checks whether the vertical speed (`speedY`) is negative, which indicates that
-   * the character is moving upward or falling (depending on physics logic).
-   *
-   * The result is stored in `this.wasFalling`, which can be used for triggering fall-specific animations
-   * or behaviors elsewhere in the game.
-   *
-   * @method startFallingDetection
+   * Starts a loop to detect whether the character is falling,
+   * updating the `wasFalling` state approximately 60 times per second.
    */
   startFallingDetection() {
     setInterval(() => {
@@ -120,19 +101,8 @@ class Character extends MovableObject {
   }
 
   /**
-   * Starts the main animation loop and movement logic for the character.
-   *
-   * This method:
-   * - Runs a loop at ~60 FPS to:
-   *   - Pause walking sound (to prevent looping overlap)
-   *   - Detect vertical movement (`wasFalling`) based on `speedY`
-   *   - Handle movement logic (`handleRightMovement`, `handleLeftMovement`, `handleJump`)
-   *   - Update the camera position relative to the character's x-coordinate
-   * - Calls `startCharacterAnimationLoop()` to handle sprite frame animations independently
-   *
-   * Note: This method assumes the presence of a global `sounds.walking` object and a `world` with `camera_x`.
-   *
-   * @method animate
+   * Starts the main animation loop for the character, handling movement, jumping,
+   * and camera positioning. Also initiates the character's animation frame updates.
    */
   animate() {
     setInterval(() => {
@@ -150,18 +120,8 @@ class Character extends MovableObject {
   }
 
   /**
-   * Starts the character's animation loop based on their current state.
-   *
-   * This method executes every 100 milliseconds (10 FPS) and determines the correct animation
-   * to display based on the character's condition:
-   *
-   * - Pauses the snore sound to avoid overlapping audio playback.
-   * - If the character is dead (`isDead()`), triggers the lose sound (once) and plays the death animation.
-   * - If the character is hurt (`isHurt()`), plays the hurt animation and sound effect.
-   * - If the character is mid-air (`isAboveGround()`), plays the jumping animation.
-   * - Otherwise, chooses between idle or walking animation depending on the `idleTime` since last action.
-   *
-   * @method startCharacterAnimationLoop
+   * Runs the character's animation loop, updating the displayed sprite based on
+   * the character's state (dead, hurt, jumping, idle, or walking) and idle time.
    */
   startCharacterAnimationLoop() {
     setInterval(() => {
@@ -183,13 +143,8 @@ class Character extends MovableObject {
   }
 
   /**
-   * Plays the lose sound exactly once to avoid repeated playback.
-   *
-   * This method checks a flag (`hasPlayedLoseSound`) to determine whether the lose sound
-   * has already been triggered. If not, it calls `playLoseSounds()` and sets the flag to true.
-   * Useful during character death to prevent the sound from playing multiple times.
-   *
-   * @method playLoseSoundOnce
+   * Plays the lose sound once when the character dies,
+   * ensuring it doesn't repeat by setting a flag.
    */
   playLoseSoundOnce() {
     if (!this.hasPlayedLoseSound) {
@@ -199,18 +154,11 @@ class Character extends MovableObject {
   }
 
   /**
-   * Determines and plays the appropriate animation based on player input and idle time.
+   * Determines and plays the appropriate animation based on keyboard input and idle time.
+   * Plays walking animation if moving, long idle if idle for 10+ seconds,
+   * otherwise plays standard idle animation and may trigger snore sound.
    *
-   * This method:
-   * - Plays the walking animation if the player is pressing the left or right arrow keys.
-   * - Plays the long idle animation and snore sound if the character has been idle for 10 seconds or more.
-   * - Otherwise, plays the standard idle animation.
-   *
-   * It uses `this.world.keyboard.LEFT` and `this.world.keyboard.RIGHT` to detect movement input,
-   * and `idleTime` to evaluate inactivity duration.
-   *
-   * @method playIdleOrWalkAnimation
-   * @param {number} idleTime - The duration in seconds the character has been idle.
+   * @param {number} idleTime - Time in seconds since the last player action.
    */
   playIdleOrWalkAnimation(idleTime) {
     if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
@@ -225,12 +173,7 @@ class Character extends MovableObject {
   }
 
   /**
-   * Plays the hurt sound effect with a reduced volume.
-   *
-   * This method triggers the character's hurt sound (`sounds.hurt`)
-   * and sets its volume to 10% to avoid overpowering other audio.
-   *
-   * @method playHurtSounds
+   * Plays the character's hurt sound effect at reduced volume.
    */
   playHurtSounds() {
     sounds.hurt.play();
@@ -238,14 +181,7 @@ class Character extends MovableObject {
   }
 
   /**
-   * Handles audio playback when the player loses the game.
-   *
-   * This method:
-   * - Pauses the endboss theme (`sounds.endbossTime`)
-   * - Sets the volume for the lose sound to 10%
-   * - Plays the lose sound (`sounds.lose`)
-   *
-   * @method playLoseSounds
+   * Stops the endboss music and plays the lose sound effect at reduced volume.
    */
   playLoseSounds() {
     sounds.endbossTime.pause();
@@ -254,16 +190,10 @@ class Character extends MovableObject {
   }
 
   /**
-   * Handles the jump action based on user input and current character state.
+   * Handles the character's jump action when the SPACE key is pressed
+   * and the character is on the ground. Triggers jump sound and updates action time.
    *
-   * This method:
-   * - Checks if the spacebar (`SPACE`) is pressed and the character is on the ground
-   * - If so, triggers the jump via `this.jump()`
-   * - Updates `lastActionTime` to track user activity
-   * - Plays the jump sound effect at reduced volume
-   *
-   * @method handleJump
-   * @param {number} now - The current timestamp in milliseconds (used to update `lastActionTime`).
+   * @param {number} now - The current timestamp used to track the last action.
    */
   handleJump(now) {
     if (this.world.keyboard.SPACE && !this.isAboveGround()) {
@@ -275,16 +205,11 @@ class Character extends MovableObject {
   }
 
   /**
-   * Handles the character's movement to the left based on keyboard input.
+   * Handles character movement to the left when the LEFT key is pressed
+   * and the character hasn't reached the movement boundary.
+   * Updates direction, action time, and plays walking sound if on the ground.
    *
-   * This method:
-   * - Moves the character left if the left arrow key is pressed and `x` position is above -510.
-   * - Sets the character's direction to `otherDirection = true` (i.e., facing left).
-   * - Updates `lastActionTime` to track recent input.
-   * - If the character is on the ground, plays the walking sound at full volume.
-   *
-   * @method handleLeftMovement
-   * @param {number} now - The current timestamp in milliseconds (used to update `lastActionTime`).
+   * @param {number} now - The current timestamp used to track the last action.
    */
   handleLeftMovement(now) {
     if (this.world.keyboard.LEFT && this.x > -510) {
@@ -299,17 +224,11 @@ class Character extends MovableObject {
   }
 
   /**
-   * Handles the character's movement to the right based on keyboard input.
+   * Handles character movement to the right when the RIGHT key is pressed
+   * and the character hasn't reached the level's end boundary.
+   * Updates direction, action time, and plays walking sound if on the ground.
    *
-   * This method:
-   * - Moves the character to the right if the right arrow key is pressed
-   *   and the character hasn't reached the level's end (`level_end_x`).
-   * - Sets the character's direction to `otherDirection = false` (facing right).
-   * - Updates `lastActionTime` to track activity for idle detection.
-   * - Plays the walking sound at full volume if the character is on the ground.
-   *
-   * @method handleRightMovement
-   * @param {number} now - The current timestamp in milliseconds (used to update `lastActionTime`).
+   * @param {number} now - The current timestamp used to track the last action.
    */
   handleRightMovement(now) {
     if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
@@ -324,22 +243,12 @@ class Character extends MovableObject {
   }
 
   /**
-   * Determines if the character is above a given enemy in a way that would trigger a stomp interaction.
+   * Determines whether the character is positioned above the enemy
+   * in a way that could allow a jump attack. Checks vertical alignment,
+   * horizontal overlap, and whether the character is falling.
    *
-   * This method checks:
-   * - If there is horizontal overlap between the character and the enemy.
-   * - If the bottom of the character is vertically within the enemy's body/head zone.
-   * - If the character is falling (downward motion or was previously falling).
-   *
-   * These conditions are commonly used for allowing the player to defeat an enemy by jumping on it.
-   *
-   * @method isAbove
-   * @param {Object} enemy - The enemy object to compare against.
-   * @param {number} enemy.x - X-position of the enemy.
-   * @param {number} enemy.y - Y-position of the enemy.
-   * @param {number} enemy.width - Width of the enemy.
-   * @param {number} enemy.height - Height of the enemy.
-   * @returns {boolean} `true` if the character is above and falling on the enemy, otherwise `false`.
+   * @param {Object} enemy - The enemy to compare positions with.
+   * @returns {boolean} True if the character is above the enemy and falling.
    */
   isAbove(enemy) {
     let characterBottom = this.y + this.height;
@@ -354,15 +263,8 @@ class Character extends MovableObject {
   }
 
   /**
-   * Plays the character's death animation frame by frame and triggers the end of the game.
-   *
-   * This method:
-   * - Prevents the animation from running multiple times by checking `this.deathAnimationPlayed`.
-   * - Iterates through the `IMAGES_DEAD` frames at 100ms intervals.
-   * - Updates the character's image (`this.img`) using a cached image path.
-   * - Once all frames are played, it calls `endGameAfterDelay()` and clears the interval.
-   *
-   * @method playDeathAnimation
+   * Plays the character's death animation by cycling through death images.
+   * Ensures the animation plays only once, and triggers game end after completion.
    */
   playDeathAnimation() {
     if (this.deathAnimationPlayed) return;
@@ -380,18 +282,11 @@ class Character extends MovableObject {
   }
 
   /**
-   * Ends the game after a short delay, showing the game over screen and handling cleanup.
+   * Ends the game after a short delay by stopping the death animation interval,
+   * displaying the game over screen, hiding UI controls, and playing the lose sound.
+   * Also resets the game world and pauses the main background music.
    *
-   * This method clears the given interval, then waits 500ms before:
-   * - Displaying the game over screen (`gameOverScreen`),
-   * - Hiding UI elements (`soundControl`, `controlIcon`),
-   * - Showing end buttons via `showEndButtonsWithDelay()`,
-   * - Setting the `world` to `null`,
-   * - Playing the secondary lose sound (`lose2`),
-   * - Pausing the main game music.
-   *
-   * @param {number} interval - The interval ID to clear before proceeding.
-   * @method endGameAfterDelay
+   * @param {number} interval - The interval ID for the death animation loop to clear.
    */
   endGameAfterDelay(interval) {
     clearInterval(interval);
@@ -410,15 +305,8 @@ class Character extends MovableObject {
   }
 
   /**
-   * Displays the restart and home buttons after a 2-second delay.
-   *
-   * This method waits 2000 milliseconds before removing the `d-none` class from:
-   * - `restartGame` button,
-   * - `homeBTN` button.
-   *
-   * Typically used at the end of the game to allow the player to restart or return home.
-   *
-   * @method showEndButtonsWithDelay
+   * Displays the restart and home buttons after a 2-second delay
+   * to allow the game over screen to settle before showing options.
    */
   showEndButtonsWithDelay() {
     setTimeout(() => {
