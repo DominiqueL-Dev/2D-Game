@@ -48,13 +48,19 @@ class World {
   }
 
   /**
- * Handles the logic for throwing a bottle when the UP key is pressed, 
- * with additional checks to ensure the character is facing right and not moving left. 
- * Updates the throwable objects list and the bottle status bar, 
- * and enforces a cooldown until the bottle splash animation completes.
- */
+   * Handles the logic for throwing a bottle when the UP key is pressed,
+   * with additional checks to ensure the character is facing right and not moving left.
+   * Updates the throwable objects list and the bottle status bar,
+   * and enforces a cooldown until the bottle splash animation completes.
+   */
   checkThrowObjects() {
-    if (this.keyboard.UP && this.collectedBottles.length > 0 && this.canThrowBottle && !this.keyboard.LEFT &&  !this.character.otherDirection) {
+    if (
+      this.keyboard.UP &&
+      this.collectedBottles.length > 0 &&
+      this.canThrowBottle &&
+      !this.keyboard.LEFT &&
+      !this.character.otherDirection
+    ) {
       this.canThrowBottle = false;
       this.collectedBottles.pop();
       let thrownBottle = new ThrowableObject(
@@ -78,14 +84,11 @@ class World {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.ctx.translate(this.camera_x, 0);
+    this.addToMap(this.character);
     this.renderAllObjects();
     this.ctx.translate(-this.camera_x, 0);
 
     this.renderStatusBars();
-
-    this.ctx.translate(this.camera_x, 0);
-    this.addToMap(this.character);
-    this.ctx.translate(-this.camera_x, 0);
     this.scheduleNextFrame(self);
   }
 
@@ -118,6 +121,7 @@ class World {
   renderAllObjects() {
     this.addObjectsToMap(this.level.backgroundObjects);
     this.addObjectsToMap(this.level.clouds);
+    this.addToMap(this.character);
     this.addObjectsToMap(this.level.bottles);
     this.addObjectsToMap(this.level.coins);
     this.addObjectsToMap(this.level.enemies);
@@ -262,14 +266,14 @@ class World {
     }
   }
 
- /**
- * Handles the effects of a bottle hitting the endboss, including reducing its energy, 
- * updating health UI, triggering animations, and playing the bottle break sound. 
- * Also triggers the bottle's splash callback if defined.
- * 
- * @param {Endboss} endboss - The endboss instance that was hit.
- * @param {ThrowableObject} bottle - The bottle involved in the collision.
- */
+  /**
+   * Handles the effects of a bottle hitting the endboss, including reducing its energy,
+   * updating health UI, triggering animations, and playing the bottle break sound.
+   * Also triggers the bottle's splash callback if defined.
+   *
+   * @param {Endboss} endboss - The endboss instance that was hit.
+   * @param {ThrowableObject} bottle - The bottle involved in the collision.
+   */
   handleEndbossHit(endboss, bottle) {
     endboss.energy -= 20;
     this.updateEndbossHealthUI(endboss);
@@ -309,14 +313,14 @@ class World {
     }
   }
 
-/**
- * Handles the collision between a thrown bottle and a regular enemy. 
- * If the enemy is alive, it is killed, the bottle break sound is played, 
- * the bottle explodes, and the splash callback is triggered if defined.
- * 
- * @param {Object} enemy - The enemy hit by the bottle.
- * @param {ThrowableObject} bottle - The bottle involved in the collision.
- */
+  /**
+   * Handles the collision between a thrown bottle and a regular enemy.
+   * If the enemy is alive, it is killed, the bottle break sound is played,
+   * the bottle explodes, and the splash callback is triggered if defined.
+   *
+   * @param {Object} enemy - The enemy hit by the bottle.
+   * @param {ThrowableObject} bottle - The bottle involved in the collision.
+   */
   handleBottleEnemyCollision(enemy, bottle) {
     if (!enemy.isDead && bottle.isColliding(enemy)) {
       enemy.die();
