@@ -65,6 +65,62 @@ function restartGame() {
 }
 
 /**
+ * Returns the game to the home screen and resets the game state.
+ *
+ * This method:
+ * - Sets `gameStarted` to false.
+ * - Clears all active intervals to stop ongoing processes.
+ * - Pauses and resets the main background music if it exists.
+ * - Resets critical game components (`level1`, `world`, `keyboard`).
+ * - Reinitializes the first level via `initLevel1()`.
+ * - Resets the UI to the initial start screen using `resetToStartScreen()`.
+ *
+ * Typically used when the user clicks the "Home" button to exit gameplay.
+ *
+ * @method goToHomeScreen
+ */
+function goToHomeScreen() {
+  gameStarted = false;
+  clearAllInterVals();
+  if (sounds && sounds.main) {
+    sounds.main.pause();
+    sounds.main.currentTime = 0;
+  }
+  level1 = null;
+  world = null;
+  keyboard = new Keyboard();
+  initLevel1();
+
+  resetToStartScreen();
+}
+
+/**
+ * Resets the UI to the start screen state.
+ *
+ * This method:
+ * - Shows the welcome and start game buttons.
+ * - Removes any win or game-over screens.
+ * - Resets visibility of UI elements like the button section, restart button, home button,
+ *   and sound/controls icons.
+ *
+ * It is typically called after returning from a completed or failed game to prepare for
+ * a new game session.
+ *
+ * @method resetToStartScreen
+ */
+function resetToStartScreen() {
+  document.getElementById("helloScreen").classList.remove("d-none");
+  document.getElementById("startGame").classList.remove("d-none");
+  document.getElementById("buttonSection").classList.remove("flexEnd");
+  document.getElementById("youWonScreen").classList.add("d-none");
+  document.getElementById("gameOverScreen").classList.add("d-none");
+  document.getElementById("restartGame").classList.add("d-none");
+  document.getElementById("homeBTN").classList.add("d-none");
+  document.getElementById("soundControl").classList.remove("d-none");
+  document.getElementById("controlIcon").classList.remove("d-none");
+}
+
+/**
  * Activates the main game UI by hiding all overlay screens such as
  * the welcome, win, and game over screens, and showing the necessary
  * game interface elements like sound and control icons.
@@ -186,16 +242,6 @@ function clearAllInterVals() {
   for (let i = 1; i < 9999; i++) {
     window.clearInterval(i);
   }
-}
-
-/**
- * Reloads the current webpage.
- *
- * This function triggers a full page reload, reinitializing all scripts and resetting the game state.
- * It is equivalent to pressing the browser's refresh button.
- */
-function reloadPage() {
-  location.reload();
 }
 
 /**
