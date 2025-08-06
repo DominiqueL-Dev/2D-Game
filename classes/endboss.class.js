@@ -60,6 +60,7 @@ class Endboss extends MovableObject {
     this.loadImages(this.IMAGES_DEAD);
     this.loadImages(this.IMAGES_WALK);
     this.x = 2250;
+    this.speed = 0.8;
     this.animate();
   }
 
@@ -134,19 +135,19 @@ class Endboss extends MovableObject {
     return i;
   }
 
-/**
- * Finalizes the game after a short delay once the player has won.
- *
- * This method sets a 3-second timeout after the endboss defeat to:
- * - Show the restart and home buttons by removing the `d-none` class.
- * - Reset the game world by setting `world` to `null`.
- * - Clear all running intervals via `clearAllInterVals()`.
- * - Pause the main background music.
- *
- * This creates a smooth transition from the game ending to the post-game UI.
- *
- * @method finalizeGameAfterDelay
- */
+  /**
+   * Finalizes the game after a short delay once the player has won.
+   *
+   * This method sets a 3-second timeout after the endboss defeat to:
+   * - Show the restart and home buttons by removing the `d-none` class.
+   * - Reset the game world by setting `world` to `null`.
+   * - Clear all running intervals via `clearAllInterVals()`.
+   * - Pause the main background music.
+   *
+   * This creates a smooth transition from the game ending to the post-game UI.
+   *
+   * @method finalizeGameAfterDelay
+   */
   finalizeGameAfterDelay() {
     setTimeout(() => {
       document.getElementById("restartGame").classList.remove("d-none");
