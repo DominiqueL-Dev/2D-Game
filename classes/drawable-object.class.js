@@ -75,11 +75,11 @@ class DrawableObject {
    */
   getCollisionOffset() {
     if (this instanceof Character) {
-      return { top: 0, right: 40, bottom: 0, left: 0 };
+      return { top: 0, right: 50, bottom: 0, left: 30 };
     } else if (this instanceof Chicken) {
       return { top: 0, right: 0, bottom: 0, left: 0 };
     } else if (this instanceof Endboss) {
-      return { top: 0, right: 40, bottom: 0, left: 50 };
+      return { top: 0, right: 40, bottom: 0, left: 30 };
     } else if (this instanceof Chick) {
       return { top: 0, right: 0, bottom: 0, left: 0 };
     } else if (this instanceof Bottle) {
