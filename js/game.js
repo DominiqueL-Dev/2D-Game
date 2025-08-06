@@ -185,47 +185,61 @@ function closeOverlay() {
 }
 
 /**
- * Adds event listeners for keydown events and updates the `keyboard` state accordingly.
- * Maps specific key codes to movement and action flags used by the game:
- * - SPACE (32): Jump
- * - LEFT ARROW (37) or 'A' (65): Move left
- * - UP ARROW (38) or 'W' (87): Throw bottle
- * - RIGHT ARROW (39) or 'D' (68): Move right
+ * Listens for keydown events and updates the keyboard input state.
+ *
+ * This handler responds to both arrow keys and WASD keys to control character movement:
+ * - " " (space) → `keyboard.SPACE = true`
+ * - "ArrowLeft" or "A" → `keyboard.LEFT = true`
+ * - "ArrowUp" or "W" → `keyboard.UP = true`
+ * - "ArrowRight" or "D" → `keyboard.RIGHT = true`
+ *
+ * All key checks are case-insensitive.
+ *
+ * @event keydown
  */
 document.addEventListener("keydown", (event) => {
-  if (event.keyCode == 32) {
+  const key = event.key.toLowerCase();
+
+  if (key === " ") {
     keyboard.SPACE = true;
   }
-  if (event.keyCode == 37 || event.keyCode == 65) {
+  if (key === "arrowleft" || key === "a") {
     keyboard.LEFT = true;
   }
-  if (event.keyCode == 38 || event.keyCode == 87) {
+  if (key === "arrowup" || key === "w") {
     keyboard.UP = true;
   }
-  if (event.keyCode == 39 || event.keyCode == 68) {
+  if (key === "arrowright" || key === "d") {
     keyboard.RIGHT = true;
   }
 });
 
 /**
- * Adds event listeners for keyup events and updates the `keyboard` state accordingly.
- * Resets movement and action flags when keys are released:
- * - SPACE (32): Stop jumping
- * - LEFT ARROW (37) or 'A' (65): Stop moving left
- * - UP ARROW (38) or 'W' (87): Stop throwing
- * - RIGHT ARROW (39) or 'D' (68): Stop moving right
+ * Listens for keyup events and updates the keyboard input state.
+ *
+ * This handler resets the character's movement input states when keys are released:
+ * - " " (space) → `keyboard.SPACE = false`
+ * - "ArrowLeft" or "A" → `keyboard.LEFT = false`
+ * - "ArrowUp" or "W" → `keyboard.UP = false`
+ * - "ArrowRight" or "D" → `keyboard.RIGHT = false`
+ *
+ * All key checks are case-insensitive.
+ *
+ * @event keyup
  */
 document.addEventListener("keyup", (event) => {
-  if (event.keyCode == 32) {
+  const key = event.key.toLowerCase();
+
+  if (key === " ") {
     keyboard.SPACE = false;
   }
-  if (event.keyCode == 37 || event.keyCode == 65) {
+  if (key === "arrowleft" || key === "a") {
     keyboard.LEFT = false;
   }
-  if (event.keyCode == 38 || event.keyCode == 87) {
+  if (key === "arrowup" || key === "w") {
     keyboard.UP = false;
   }
-  if (event.keyCode == 39 || event.keyCode == 68) {
+  if (key === "arrowright" || key === "d") {
     keyboard.RIGHT = false;
   }
 });
